@@ -21,3 +21,11 @@ describe('helper', function() {
     });
   });
 });
+
+describe('helper', function() {
+  describe('.strStripNumbers(str)', function () {
+    it('returns an array of numbers embedded in str', function () {
+      assert.deepEqual([13, 4, 8, 11], helper.strStripNumbers('13uk4_8pz11n'));
+    });
+  });
+});

@@ -76,4 +76,7 @@ var helper = exports.helper = {
     var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
     return parts.ext.toUpperCase() === extension.toUpperCase();
   },
+  strStripNumbers: function(str) {
+    return str.match(/\d+/g).map(__.parseInt);
+  }
 };
