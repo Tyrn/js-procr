@@ -1,0 +1,22 @@
+{
+  "name": "js-procr",
+  "version": "1.0.0",
+  "description": "Audio album builder for mobile devices",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tyrn/js-procr.git"
+  },
+  "author": "Alexey Orlov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tyrn/js-procr/issues"
+  },
+  "homepage": "https://github.com/Tyrn/js-procr#readme"
+}
