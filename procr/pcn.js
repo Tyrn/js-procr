@@ -7,6 +7,7 @@ var path = require('path');
 var mt = require('mutagen');
 
 var args = (function() {
+  return null;
 
   var ArgumentParser = require('argparse').ArgumentParser;
   var parser = new ArgumentParser({
@@ -65,11 +66,11 @@ var args = (function() {
   return rg;
 })();
 
-var helper = {
+var helper = exports.helper = {
   sansExt: function(pth) {
     var parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
   },
 };
 
-console.log(helper.sansExt('/alfa/bra.vo/masha.txt'));
+// console.log(helper.sansExt('/alfa/bra.vo/masha.txt'));

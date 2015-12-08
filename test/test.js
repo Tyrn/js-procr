@@ -1,9 +1,12 @@
 var assert = require('assert');
-describe('Array', function() {
-  describe('#indexOf()', function () {
-    it('should return -1 when the value is not present', function () {
-      assert.equal(-1, [1,2,3].indexOf(5));
-      assert.equal(-1, [1,2,3].indexOf(0));
+
+var pcn = require('../procr/pcn');
+var helper = pcn.helper;
+
+describe('helper', function() {
+  describe('#sansExt()', function () {
+    it('should return a path short of file extension', function () {
+      assert.equal('/alfa/bra.vo/masha', helper.sansExt('/alfa/bra.vo/masha.txt'));
     });
   });
 });
