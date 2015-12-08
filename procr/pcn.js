@@ -7,7 +7,7 @@ var path = require('path');
 var mt = require('mutagen');
 
 var args = (function() {
-  return null;
+  if(require.main !== module) return null;
 
   var ArgumentParser = require('argparse').ArgumentParser;
   var parser = new ArgumentParser({
@@ -71,6 +71,9 @@ var helper = exports.helper = {
     var parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
   },
+  hasExtOf: function(pth, ext) {
+    var parts = path.parse(pth);
+    var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
+    return parts.ext.toUpperCase() === extension.toUpperCase();
+  },
 };
-
-// console.log(helper.sansExt('/alfa/bra.vo/masha.txt'));
