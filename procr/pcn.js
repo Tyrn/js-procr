@@ -4,6 +4,7 @@ debugger;
 
 var __ = require('lodash');
 var path = require('path');
+var mt = require('mutagen');
 
 var args = (function() {
 
@@ -64,4 +65,11 @@ var args = (function() {
   return rg;
 })();
 
-console.log('done');
+var helper = {
+  sansExt: function(pth) {
+    var parts = path.parse(pth);
+    return path.join(parts.dir, parts.name);
+  },
+};
+
+console.log(helper.sansExt('/alfa/bra.vo/masha.txt'));
