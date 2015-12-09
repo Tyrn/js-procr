@@ -102,6 +102,27 @@ var helper = exports.helper = (function() {
     var b = strStripNumbers(y);
     return (a && b) ? arrayCmp(a, b) : strcmp(x, y);
   }
+  function collectDirsAndFiles(absPath, fileCondition) {
+    var lst = fs.readdirSync(absPath).map(function(x) {return path.join(absPath, x)});
+    var dirs = [], files = [];
+    for(var i = 0; i < lst.length; i++) {
+      if(fs.lstatSync(lst[i]).isDirectory()) dirs.push(lst[i]);
+      else {
+        if(fileCondition(lst[i])) files.push(lst[i]);
+      }
+    }
+    return {dirs: dirs, files: files};
+  }
+  function fileCount(dirPath, fileCondition) {
+    var cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
+    for(var i = 0; i < haul.dirs.length; i++) {
+      cnt += fileCount(haul.dirs[i], fileCondition);
+    };
+    for(i = 0; i < haul.files.length; i++) {
+      if(fileCondition(haul.files[i])) cnt++;
+    }
+    return cnt;
+  }
   return {
     sansExt: sansExt,
     hasExtOf: hasExtOf,
@@ -109,6 +130,8 @@ var helper = exports.helper = (function() {
     arrayCmp: arrayCmp,
     strcmp: strcmp,
     strcmpNaturally: strcmpNaturally,
+    collectDirsAndFiles: collectDirsAndFiles,
+    fileCount: fileCount
   }
 })();
 
@@ -129,17 +152,10 @@ var main = (function(args, helper) {
     return false;
   }
   function listDirGroom(absPath, reverse) {
-    var lst = fs.readdirSync(absPath).map(function(x) {return path.join(absPath, x)});
-    var dirs = [], files = [];
-    for(var i = 0; i < lst.length; i++) {
-      if(fs.lstatSync(lst[i]).isDirectory()) dirs.push(lst[i]);
-      else {
-        if(isAudioFile(lst[i])) files.push(lst[i]);
-      }
-    }
+    var haul = helper.collectDirsAndFiles(absPath, isAudioFile);
     return {
-      dirs: dirs.sort(reverse ? function(xp, yp) {return -comparePath(xp, yp)} : comparePath),
-      files: files.sort(reverse ? function(xf, yf) {return -compareFile(xf, yf)} : compareFile)
+      dirs: haul.dirs.sort(reverse ? function(xp, yp) {return -comparePath(xp, yp)} : comparePath),
+      files: haul.files.sort(reverse ? function(xf, yf) {return -compareFile(xf, yf)} : compareFile)
     };
   }
   function decorateDirName(i, name) {
@@ -172,6 +188,9 @@ var main = (function(args, helper) {
 if(require.main !== module) return null;  
 
 var acc = [], fcount = [1];
+
+var firstPassCount = helper.fileCount('/home/alexey/dir-src', main.isAudioFile);
+console.log(firstPassCount);
 
 main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, 4);
 console.log(acc);
