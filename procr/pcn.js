@@ -158,11 +158,14 @@ var main = (function(args, helper) {
       files: haul.files.sort(reverse ? function(xf, yf) {return -compareFile(xf, yf)} : compareFile)
     };
   }
+  function zeroPad(w, i) {
+    return (['ZZZ', '0', '00', '000', '0000', '00000'][w] + i).slice(-w);
+  }
   function decorateDirName(i, name) {
-    return ('000' + i).slice(-3) + '-' + name;
+    return zeroPad(3, i) + '-' + name;
   }
   function decorateFileName(cntw, i, name) {
-    return ('0000' + i).slice(-4) + '-' +
+    return zeroPad(cntw, i) + '-' +
             (args.unified_name ? args.unified_name + path.extname(name) : name);
   }
   function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
@@ -192,7 +195,7 @@ var acc = [], fcount = [1];
 var firstPassCount = helper.fileCount('/home/alexey/dir-src', main.isAudioFile);
 console.log(firstPassCount);
 
-main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, 4);
+main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, firstPassCount.toString().length);
 console.log(acc);
 console.log(acc.length, fcount[0]);
 console.log('done');
