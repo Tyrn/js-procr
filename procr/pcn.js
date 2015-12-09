@@ -4,6 +4,7 @@ debugger;
 
 var __ = require('lodash');
 var path = require('path');
+var fs = require('fs');
 var mt = require('mutagen');
 
 var args = (function() {
@@ -66,17 +67,73 @@ var args = (function() {
   return rg;
 })();
 
-var helper = exports.helper = {
-  sansExt: function(pth) {
+var helper = exports.helper = (function() {
+  function sansExt(pth) {
     var parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
-  },
-  hasExtOf: function(pth, ext) {
+  }
+  function hasExtOf(pth, ext) {
     var parts = path.parse(pth);
     var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
     return parts.ext.toUpperCase() === extension.toUpperCase();
-  },
-  strStripNumbers: function(str) {
-    return str.match(/\d+/g).map(__.parseInt);
   }
-};
+  function strStripNumbers(str) {
+    var match = str.match(/\d+/g);
+    return (match) ? match.map(__.parseInt) : match;  // null, if no digits encountered.
+  }
+  function arrayCmp(x, y) {
+    if(x.length === 0) return (y.length === 0) ? 0 : -1;
+    if(y.length === 0) return (x.length === 0) ? 0 : 1;
+
+    for(var i = 0; x[i] === y[i]; i++) {
+      if(i === x.length - 1 || i === y.length - 1) {
+        // Short array is a prefix of the long one; end reached. All is equal so far.
+        if(x.length === y.length) return 0;   // Long array is no longer than the short one.
+        return (x.length < y.length) ? -1 : 1;
+      }
+    }
+    // Difference encountered.
+    return (x[i] < y[i]) ? -1 : 1;
+  }
+  function strcmp(x, y) {
+    return (x < y) ? -1 : +(x > y);
+  }
+  function strcmpNaturally(x, y) {
+    var a = strStripNumbers(x);
+    var b = strStripNumbers(y);
+    return (a && b) ? arrayCmp(a, b) : strcmp(x, y);
+  }
+  return {
+    sansExt: sansExt,
+    hasExtOf: hasExtOf,
+    strStripNumbers: strStripNumbers,
+    arrayCmp: arrayCmp,
+    strcmp: strcmp,
+    strcmpNaturally: strcmpNaturally
+  }
+})();
+
+var main = (function(args, helper) {
+  function comparePath(xp, yp) {
+    var x = sansExt(xp);
+    var y = sansExt(yp);
+    return (args.sort_lex) ? strcmp(x, y) : strcmpNaturally(x, y);
+  }
+  function compareFile(xf, yf) {
+    var x = sansExt(path.parse(xf).base);
+    var y = sansExt(path.parse(yf).base);
+    return (args.sort_lex) ? strcmp(x, y) : strcmpNaturally(x, y);
+  }
+  function isAudioFile(pth) {
+    if(fs.lstatSync(pth).isDirectory()) return false;
+    var ext = path.parse(pth).ext.toUpperCase();
+    if(['.MP3', '.M4A'].indexOf(ext) != -1) return true;
+    return false;
+  }
+  return {
+    comparePath: comparePath,
+    compareFile: compareFile,
+    isAudioFile: isAudioFile,
+  }
+
+})(args, helper);
