@@ -8,7 +8,7 @@ var fs = require('fs');
 var mt = require('mutagen');
 
 var args = (function() {
-  if(require.main !== module) return null;
+  if(require.main !== module) return null;  
 
   var ArgumentParser = require('argparse').ArgumentParser;
   var parser = new ArgumentParser({
@@ -73,9 +73,8 @@ var helper = exports.helper = (function() {
     return path.join(parts.dir, parts.name);
   }
   function hasExtOf(pth, ext) {
-    var parts = path.parse(pth);
     var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
-    return parts.ext.toUpperCase() === extension.toUpperCase();
+    return path.extname(pth).toUpperCase() === extension.toUpperCase();
   }
   function strStripNumbers(str) {
     var match = str.match(/\d+/g);
@@ -109,31 +108,72 @@ var helper = exports.helper = (function() {
     strStripNumbers: strStripNumbers,
     arrayCmp: arrayCmp,
     strcmp: strcmp,
-    strcmpNaturally: strcmpNaturally
+    strcmpNaturally: strcmpNaturally,
   }
 })();
 
 var main = (function(args, helper) {
   function comparePath(xp, yp) {
-    var x = sansExt(xp);
-    var y = sansExt(yp);
-    return (args.sort_lex) ? strcmp(x, y) : strcmpNaturally(x, y);
+    var x = helper.sansExt(xp);
+    var y = helper.sansExt(yp);
+    return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
   function compareFile(xf, yf) {
-    var x = sansExt(path.parse(xf).base);
-    var y = sansExt(path.parse(yf).base);
-    return (args.sort_lex) ? strcmp(x, y) : strcmpNaturally(x, y);
+    var x = helper.sansExt(path.parse(xf).base);
+    var y = helper.sansExt(path.parse(yf).base);
+    return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
   function isAudioFile(pth) {
     if(fs.lstatSync(pth).isDirectory()) return false;
-    var ext = path.parse(pth).ext.toUpperCase();
-    if(['.MP3', '.M4A'].indexOf(ext) != -1) return true;
+    if(['.MP3', '.M4A'].indexOf(path.extname(pth).toUpperCase()) != -1) return true;
     return false;
+  }
+  function listDirGroom(absPath, reverse) {
+    var lst = fs.readdirSync(absPath).map(function(x) {return path.join(absPath, x)});
+    var dirs = [], files = [];
+    for(var i = 0; i < lst.length; i++) {
+      if(fs.lstatSync(lst[i]).isDirectory()) dirs.push(lst[i]);
+      else {
+        if(isAudioFile(lst[i])) files.push(lst[i]);
+      }
+    }
+    return {
+      dirs: dirs.sort(reverse ? function(xp, yp) {return -comparePath(xp, yp)} : comparePath),
+      files: files.sort(reverse ? function(xf, yf) {return -compareFile(xf, yf)} : compareFile)
+    };
+  }
+  function decorateDirName(i, name) {
+    return ('000' + i).slice(-3) + '-' + name;
+  }
+  function decorateFileName(cntw, i, name) {
+    return ('0000' + i).slice(-4) + '-' +
+            (args.unified_name ? args.unified_name + path.extname(name) : name);
+  }
+  function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
+    var groom = listDirGroom(srcDir, false);
+    for(var i = 0; i < groom.dirs.length; i++) {
+      traverseFlatDst(groom.dirs[i], dstRoot, flatAcc, fcount, cntw);
+    }
+    for(i = 0; i < groom.files.length; i++) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(groom.files[i])));
+      fcount[0]++;
+      flatAcc.push(dst);
+    }
   }
   return {
     comparePath: comparePath,
     compareFile: compareFile,
     isAudioFile: isAudioFile,
+    listDirGroom: listDirGroom,
+    traverseFlatDst: traverseFlatDst
   }
-
 })(args, helper);
+
+if(require.main !== module) return null;  
+
+var acc = [], fcount = [1];
+
+main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, 4);
+console.log(acc);
+console.log(acc.length, fcount[0]);
+console.log('done');
