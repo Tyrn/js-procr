@@ -64,3 +64,17 @@ describe('helper', function() {
     });
   });
 });
+
+describe('helper', function() {
+  describe('.makeInitials(name)', function () {
+    it('reduces a string of names to initials', function () {
+      assert.equal(helper.makeInitials(" "), ".");
+      assert.equal(helper.makeInitials("John ronald reuel Tolkien"), "J.R.R.T.");
+      assert.equal(helper.makeInitials("e. B. Sledge"), "E.B.S.");
+      assert.equal(helper.makeInitials("Apsley Cherry-Garrard"), "A.C-G.");
+      assert.equal(helper.makeInitials("Windsor Saxe-\tCoburg - Gotha"), "W.S-C-G.");
+      assert.equal(helper.makeInitials("Elisabeth Kubler-- - Ross"), "E.K---R.");
+      assert.equal(helper.makeInitials("Fitz-Simmons   Ashton-Burke Leigh"), "F-S.A-B.L.");
+    });
+  });
+});

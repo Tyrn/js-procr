@@ -123,6 +123,15 @@ var helper = exports.helper = (function() {
     }
     return cnt;
   }
+  function makeInits(name, sep, trail, hyph) {
+    function splitBySpace(nm) {
+      return nm.trim().split(/\s+/).map(function(x) {return x[0]}).join(sep).toUpperCase();
+    }
+    return name.split(hyph).map(splitBySpace).join(hyph) + trail;
+  }
+  function makeInitials(name) {
+    return makeInits(name, '.', '.', '-');
+  }
   return {
     sansExt: sansExt,
     hasExtOf: hasExtOf,
@@ -131,7 +140,8 @@ var helper = exports.helper = (function() {
     strcmp: strcmp,
     strcmpNaturally: strcmpNaturally,
     collectDirsAndFiles: collectDirsAndFiles,
-    fileCount: fileCount
+    fileCount: fileCount,
+    makeInitials: makeInitials
   }
 })();
 
@@ -175,11 +185,49 @@ var main = (function(args, helper) {
     }
     for(i = 0; i < groom.files.length; i++) {
       var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(groom.files[i])));
+      flatAcc.push({src: groom.files[i], dst: dst});
       fcount[0]++;
-      flatAcc.push(dst);
     }
   }
-  return {
+  function groom(src, dst, cnt) {
+    var cntw = cnt.toString().length;
+    var flatAcc = [];
+
+    if(args.tree_dst) {
+      traverseFlatDst(src, dst, flatAcc, [1], cntw);
+    } else {
+      if(args.reverse) {
+        traverseFlatDst(src, dst, flatAcc, [1], cntw);
+      } else {
+        traverseFlatDst(src, dst, flatAcc, [1], cntw);
+      }
+    }
+    return flatAcc;
+  }
+  function buildAlbum() {
+    var srcName = path.basename(args.src_dir);
+    var prefix = (args.album_num) ? zeroPad(2, args.album_num) + '-' : '';
+    var baseDst = prefix + (args.unified_name ? args.unified_name : srcName);
+    var executiveDst = path.join(args.dst_dir, args.drop_dst ? '' : baseDst);
+
+    if(!args.drop_dst) {
+      if(fs.existsSync(executiveDst)) {
+        console.log('Destination directory "' + executiveDst + '" already exists.');
+        process.exit();
+      } else {
+        fs.mkdirSync(executiveDst);
+      }
+    }
+    tot = fileCount(args.src_dir, isAudioFile);
+    belt = groom(args.src_dir, executiveDst, tot);
+    if(!args.drop_dst && tot === 0) {
+      fs.unlinkSync(executiveDst);
+      console.log('There are no supported audio files in the source directory "' + args.src_dir + '".');
+      process.exit();
+    }
+    return {count: tot, belt: belt};
+  }
+  return {  
     comparePath: comparePath,
     compareFile: compareFile,
     isAudioFile: isAudioFile,
