@@ -123,12 +123,25 @@ var helper = exports.helper = (function() {
     }
     return cnt;
   }
+  /**
+   * Reduces a sequence of names to initials.
+   * @param  {String} name  Space Delimited sequence of names.
+   * @param  {String} sep   A period separating the initials.
+   * @param  {String} trail A period ending the initials.
+   * @param  {String} hyph  A hypen separating double names.
+   * @return {String}       Properly formatted initials.
+   */
   function makeInits(name, sep, trail, hyph) {
     function splitBySpace(nm) {
       return nm.trim().split(/\s+/).map(function(x) {return x[0]}).join(sep).toUpperCase();
     }
     return name.split(hyph).map(splitBySpace).join(hyph) + trail;
   }
+  /**
+   * Reduces a sequence of names to initials.
+   * @param  {String} name Space delimited sequence of names.
+   * @return {String}      Properly formatted initials.
+   */
   function makeInitials(name) {
     return makeInits(name, '.', '.', '-');
   }
