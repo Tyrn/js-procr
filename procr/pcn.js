@@ -4,7 +4,6 @@ debugger;
 
 var __ = require('lodash');
 var path = require('path');
-// var fs = require('fs');
 var fs = require('fs-extra');
 var mt = require('mutagen');
 
@@ -138,7 +137,6 @@ var helper = exports.helper = (function() {
     hasExtOf: hasExtOf,
     strStripNumbers: strStripNumbers,
     arrayCmp: arrayCmp,
-    strcmp: strcmp,
     strcmpNaturally: strcmpNaturally,
     collectDirsAndFiles: collectDirsAndFiles,
     fileCount: fileCount,
@@ -193,15 +191,38 @@ var main = (function(args, helper) {
       fcount[0]++;
     }
   }
+  function traverseFlatDstReverse(srcDir, dstRoot, flatAcc, fcount, cntw) {
+    var groom = listDirGroom(srcDir, true);
+    for(i = 0; i < groom.files.length; i++) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(groom.files[i])));
+      flatAcc.push({src: groom.files[i], dst: dst});
+      fcount[0]--;
+    }
+    for(var i = 0; i < groom.dirs.length; i++) {
+      traverseFlatDstReverse(groom.dirs[i], dstRoot, flatAcc, fcount, cntw);
+    }
+  }
+  function traverseTreeDst(srcDir, dstRoot, flatAcc, dstStep, cntw) {
+    var step = '', groom = listDirGroom(srcDir, false);
+    for(var i = 0; i < groom.dirs.length; i++) {
+      step = path.join(dstStep, decorateDirName(i, path.basename(groom.dirs)));
+      fs.mkdirSync(path.join(dstRoot, step));
+      traverseTreeDst(groom.dirs[i], dstRoot, flatAcc, step, cntw);
+    }
+    for(i = 0; i < groom.files.length; i++) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, i, path.basename(groom.files[i])));
+      flatAcc.push({src: groom.files[i], dst: dst});
+    }
+  }
   function groom(src, dst, cnt) {
     var cntw = cnt.toString().length;
     var flatAcc = [];
 
     if(args.tree_dst) {
-      traverseFlatDst(src, dst, flatAcc, [1], cntw);
+      traverseTreeDst(src, dst, flatAcc, '', cntw);
     } else {
       if(args.reverse) {
-        traverseFlatDst(src, dst, flatAcc, [1], cntw);
+        traverseFlatDstReverse(src, dst, flatAcc, [cnt], cntw);
       } else {
         traverseFlatDst(src, dst, flatAcc, [1], cntw);
       }
@@ -234,7 +255,7 @@ var main = (function(args, helper) {
   function copyAlbum() {
     function copyFile(i, total, entry) {
       fs.copySync(entry.src, entry.dst);
-      console.log(spacePad(4, i) + '/' + total + ' ' + entry.src + ' ' + entry.dst);
+      console.log(spacePad(4, i) + '/' + total + '  ' + entry.dst);
     }
     var alb = buildAlbum();
 
@@ -249,11 +270,6 @@ var main = (function(args, helper) {
     }
   }
   return {  
-    comparePath: comparePath,
-    compareFile: compareFile,
-    isAudioFile: isAudioFile,
-    listDirGroom: listDirGroom,
-    traverseFlatDst: traverseFlatDst,
     copyAlbum: copyAlbum
   }
 })(args, helper);
@@ -261,12 +277,3 @@ var main = (function(args, helper) {
 if(require.main !== module) return null;  
 
 main.copyAlbum();
-// var acc = [], fcount = [1];
-
-// var firstPassCount = helper.fileCount('/home/alexey/dir-src', main.isAudioFile);
-// console.log(firstPassCount);
-
-// main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, firstPassCount.toString().length);
-// console.log(acc);
-// console.log(acc.length, fcount[0]);
-// console.log('done');
