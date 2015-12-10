@@ -205,12 +205,12 @@ var main = (function(args, helper) {
   function traverseTreeDst(srcDir, dstRoot, flatAcc, dstStep, cntw) {
     var step = '', groom = listDirGroom(srcDir, false);
     for(var i = 0; i < groom.dirs.length; i++) {
-      step = path.join(dstStep, decorateDirName(i, path.basename(groom.dirs)));
+      step = path.join(dstStep, decorateDirName(i, path.basename(groom.dirs[i])));
       fs.mkdirSync(path.join(dstRoot, step));
       traverseTreeDst(groom.dirs[i], dstRoot, flatAcc, step, cntw);
     }
     for(i = 0; i < groom.files.length; i++) {
-      var dst = path.join(dstRoot, decorateFileName(cntw, i, path.basename(groom.files[i])));
+      var dst = path.join(dstRoot, path.join(dstStep, decorateFileName(cntw, i, path.basename(groom.files[i]))));
       flatAcc.push({src: groom.files[i], dst: dst});
     }
   }
@@ -255,7 +255,7 @@ var main = (function(args, helper) {
   function copyAlbum() {
     function copyFile(i, total, entry) {
       fs.copySync(entry.src, entry.dst);
-      console.log(spacePad(4, i) + '/' + total + '  ' + entry.dst);
+      console.log(spacePad(4, i) + '/' + total + ' \u2665 ' + entry.dst);
     }
     var alb = buildAlbum();
 
