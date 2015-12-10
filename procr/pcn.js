@@ -4,7 +4,8 @@ debugger;
 
 var __ = require('lodash');
 var path = require('path');
-var fs = require('fs');
+// var fs = require('fs');
+var fs = require('fs-extra');
 var mt = require('mutagen');
 
 var args = (function() {
@@ -171,6 +172,9 @@ var main = (function(args, helper) {
   function zeroPad(w, i) {
     return (['ZZZ', '0', '00', '000', '0000', '00000'][w] + i).slice(-w);
   }
+  function spacePad(w, i) {
+    return (['ZZZ', ' ', '  ', '   ', '    ', '     '][w] + i).slice(-w);
+  }
   function decorateDirName(i, name) {
     return zeroPad(3, i) + '-' + name;
   }
@@ -218,7 +222,7 @@ var main = (function(args, helper) {
         fs.mkdirSync(executiveDst);
       }
     }
-    tot = fileCount(args.src_dir, isAudioFile);
+    tot = helper.fileCount(args.src_dir, isAudioFile);
     belt = groom(args.src_dir, executiveDst, tot);
     if(!args.drop_dst && tot === 0) {
       fs.unlinkSync(executiveDst);
@@ -227,23 +231,42 @@ var main = (function(args, helper) {
     }
     return {count: tot, belt: belt};
   }
+  function copyAlbum() {
+    function copyFile(i, total, entry) {
+      fs.copySync(entry.src, entry.dst);
+      console.log(spacePad(4, i) + '/' + total + ' ' + entry.src + ' ' + entry.dst);
+    }
+    var alb = buildAlbum();
+
+    if(args.reverse) {
+      for(var i = 0; i < alb.count; i++) {
+        copyFile(alb.count - i, alb.count, alb.belt[i]);
+      }
+    } else {
+      for(var i = 0; i < alb.count; i++) {
+        copyFile(i + 1, alb.count, alb.belt[i]);
+      }
+    }
+  }
   return {  
     comparePath: comparePath,
     compareFile: compareFile,
     isAudioFile: isAudioFile,
     listDirGroom: listDirGroom,
-    traverseFlatDst: traverseFlatDst
+    traverseFlatDst: traverseFlatDst,
+    copyAlbum: copyAlbum
   }
 })(args, helper);
 
 if(require.main !== module) return null;  
 
-var acc = [], fcount = [1];
+main.copyAlbum();
+// var acc = [], fcount = [1];
 
-var firstPassCount = helper.fileCount('/home/alexey/dir-src', main.isAudioFile);
-console.log(firstPassCount);
+// var firstPassCount = helper.fileCount('/home/alexey/dir-src', main.isAudioFile);
+// console.log(firstPassCount);
 
-main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, firstPassCount.toString().length);
-console.log(acc);
-console.log(acc.length, fcount[0]);
-console.log('done');
+// main.traverseFlatDst('/home/alexey/dir-src', '/home/alexey/dir-dst', acc, fcount, firstPassCount.toString().length);
+// console.log(acc);
+// console.log(acc.length, fcount[0]);
+// console.log('done');
