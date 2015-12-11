@@ -138,6 +138,7 @@ var helper = exports.helper = (function() {
     return name.split(hyph).map(splitBySpace).join(hyph) + trail;
   }
   /**
+   * @memberOf module:helper~
    * Reduces a sequence of names to initials.
    * @param  {String} name Space delimited sequence of names.
    * @return {String}      Properly formatted initials.
