@@ -66,7 +66,7 @@ var args = (function() {
   }
   return rg;
 })();
-
+/** @function */
 var helper = exports.helper = (function() {
   function sansExt(pth) {
     var parts = path.parse(pth);
@@ -124,6 +124,8 @@ var helper = exports.helper = (function() {
     return cnt;
   }
   /**
+   * @name makeInits
+   * @inner
    * Reduces a sequence of names to initials.
    * @param  {String} name  Space Delimited sequence of names.
    * @param  {String} sep   A period separating the initials.
@@ -138,7 +140,6 @@ var helper = exports.helper = (function() {
     return name.split(hyph).map(splitBySpace).join(hyph) + trail;
   }
   /**
-   * @memberOf module:helper~
    * Reduces a sequence of names to initials.
    * @param  {String} name Space delimited sequence of names.
    * @return {String}      Properly formatted initials.
