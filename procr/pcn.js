@@ -68,11 +68,22 @@ var args = (function() {
 })();
 /** module helper */
 var helper = exports.helper = (function() {
-  // "use strict";
+  /**
+   * Returns path pth with extension discarded.
+   * @param  {String} pth Path complete with extension.
+   * @return {String}     Path with extension discarded.
+   */
   function sansExt(pth) {
     var parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
   }
+  /**
+   * Returns true, if extension ext is present in path ext. Extension
+   * is case and leading dot insensitive.
+   * @param  {String}  pth Path to be checked for extension.
+   * @param  {String}  ext Extension.
+   * @return {Boolean}     Extension is present.
+   */
   function hasExtOf(pth, ext) {
     var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
     return path.extname(pth).toUpperCase() === extension.toUpperCase();
