@@ -66,8 +66,9 @@ var args = (function() {
   }
   return rg;
 })();
-/** @function */
+/** module helper */
 var helper = exports.helper = (function() {
+  // "use strict";
   function sansExt(pth) {
     var parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
@@ -124,8 +125,8 @@ var helper = exports.helper = (function() {
     return cnt;
   }
   /**
-   * @name makeInits
-   * @inner
+   * @function makeInits
+   * @pmemberOf module:helper
    * Reduces a sequence of names to initials.
    * @param  {String} name  Space Delimited sequence of names.
    * @param  {String} sep   A period separating the initials.
@@ -289,6 +290,6 @@ var main = (function(args, helper) {
   }
 })(args, helper);
 
-if(require.main !== module) return null;  
-
-main.copyAlbum();
+if(require.main === module) {
+  main.copyAlbum();
+}
