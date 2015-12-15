@@ -7,6 +7,7 @@ var path = require('path');
 var fs = require('fs-extra');
 var mt = require('mutagen');
 
+/** @module args */
 var args = (function() {
   if(require.main !== module) return null;  
 
@@ -129,16 +130,24 @@ var helper = exports.helper = (function() {
   }
   /**
    * If both strings contain digits, returns numerical comparison based on the numeric
-   * values embedded in the strings, otherwise returns the standard 
-   * @param  {[type]} x [description]
-   * @param  {[type]} y [description]
-   * @return {[type]}   [description]
+   * values embedded in the strings, otherwise returns the standard string comparison.
+   * The idea of the natural sort as opposed to the standard lexicographic sort is one of coping
+   * with the possible absence of the leading zeros in 'numbers' of files or directories.     
+   * @param  {String/Array} x String or Array of integers.
+   * @param  {String/Array} y String or Array of integers.
+   * @return {[type]}         Less than zero, zero, greater than zero.
    */
   function strcmpNaturally(x, y) {
     var a = strStripNumbers(x);
     var b = strStripNumbers(y);
     return (a && b) ? arrayCmp(a, b) : strcmp(x, y);
   }
+  /**
+   * Returns an array of directories and an array of files under absPath directory.
+   * @param  {String}   absPath       Parent directory.
+   * @param  {Function} fileCondition File check function.
+   * @return {Object}                 {dirs, files}.
+   */
   function collectDirsAndFiles(absPath, fileCondition) {
     var lst = fs.readdirSync(absPath).map(function(x) {return path.join(absPath, x)});
     var dirs = [], files = [];
@@ -150,6 +159,12 @@ var helper = exports.helper = (function() {
     }
     return {dirs: dirs, files: files};
   }
+  /**
+   * Counts files in a subtree according to fileCondition.
+   * @param  {String}   dirPath       Root of the subtree.
+   * @param  {Function} fileCondition File check function.
+   * @return {Integer}                File count.
+   */
   function fileCount(dirPath, fileCondition) {
     var cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
     for(var i = 0; i < haul.dirs.length; i++) {
@@ -195,23 +210,46 @@ var helper = exports.helper = (function() {
     makeInitials: makeInitials
   }
 })();
-
+/** @module main */
 var main = (function(args, helper) {
+  /**
+   * Compares paths xp and yp naturally, ignoring extensions.
+   * @param  {String}  xp Path.
+   * @param  {String}  yp Path.
+   * @return {Integer}    Less than zero, zero, greater than zero.
+   */
   function comparePath(xp, yp) {
     var x = helper.sansExt(xp);
     var y = helper.sansExt(yp);
     return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
+  /**
+   * Compares file names ignoring extensions, lexicographically or naturally.
+   * @param  {String}  xf Path.
+   * @param  {String}  yf Path.
+   * @return {Integer}    Less than zero, zero, greater than zero.
+   */
   function compareFile(xf, yf) {
     var x = helper.sansExt(path.parse(xf).base);
     var y = helper.sansExt(path.parse(yf).base);
     return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
+  /**
+   * Checks if pth is an audio file.
+   * @param  {String}  pth Path.
+   * @return {Boolean}     True, if pth is an audio file.
+   */
   function isAudioFile(pth) {
     if(fs.lstatSync(pth).isDirectory()) return false;
     if(['.MP3', '.M4A'].indexOf(path.extname(pth).toUpperCase()) != -1) return true;
     return false;
   }
+  /**
+   * Sorts child directories and files of absPath, separately.
+   * @param  {String}  absPath Parent directory.
+   * @param  {Boolean} reverse If true, sort in descending order. 
+   * @return {Object}  {dirs, files}.
+   */
   function listDirGroom(absPath, reverse) {
     var haul = helper.collectDirsAndFiles(absPath, isAudioFile);
     return {
