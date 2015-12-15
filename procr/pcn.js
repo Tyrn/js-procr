@@ -88,10 +88,22 @@ var helper = exports.helper = (function() {
     var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
     return path.extname(pth).toUpperCase() === extension.toUpperCase();
   }
+  /**
+   * Returns an array of integers embedded in str as clusters of
+   * one or more digits. Leading zeros affect no values.
+   * @param  {String}  str Any string (as a file name).
+   * @return {Array}       Array of integers.
+   */
   function strStripNumbers(str) {
     var match = str.match(/\d+/g);
     return (match) ? match.map(__.parseInt) : match;  // null, if no digits encountered.
   }
+  /**
+   * Compares two arrays of integers, x and y, 'string semantics'.
+   * @param  {Array} x   Array of integers.
+   * @param  {Array} y   Array of integers.
+   * @return {Integer}   Less than zero, zero, greater than zero.
+   */
   function arrayCmp(x, y) {
     if(x.length === 0) return (y.length === 0) ? 0 : -1;
     if(y.length === 0) return (x.length === 0) ? 0 : 1;
@@ -106,9 +118,22 @@ var helper = exports.helper = (function() {
     // Difference encountered.
     return (x[i] < y[i]) ? -1 : 1;
   }
+  /**
+   * String comparison, C style.
+   * @param  {String} x  String.
+   * @param  {String} y  String.
+   * @return {Integer}   Less than zero, zero, greater than zero.
+   */
   function strcmp(x, y) {
     return (x < y) ? -1 : +(x > y);
   }
+  /**
+   * If both strings contain digits, returns numerical comparison based on the numeric
+   * values embedded in the strings, otherwise returns the standard 
+   * @param  {[type]} x [description]
+   * @param  {[type]} y [description]
+   * @return {[type]}   [description]
+   */
   function strcmpNaturally(x, y) {
     var a = strStripNumbers(x);
     var b = strStripNumbers(y);
