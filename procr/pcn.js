@@ -67,10 +67,11 @@ var args = (function() {
   }
   return rg;
 })();
-/** module helper */
+/** @module helper */
 var helper = exports.helper = (function() {
   /**
    * Returns path pth with extension discarded.
+   * @function sansExt
    * @param  {String} pth Path complete with extension.
    * @return {String}     Path with extension discarded.
    */
@@ -81,6 +82,7 @@ var helper = exports.helper = (function() {
   /**
    * Returns true, if extension ext is present in path ext. Extension
    * is case and leading dot insensitive.
+   * @function hasExtOf
    * @param  {String}  pth Path to be checked for extension.
    * @param  {String}  ext Extension.
    * @return {Boolean}     Extension is present.
@@ -92,6 +94,7 @@ var helper = exports.helper = (function() {
   /**
    * Returns an array of integers embedded in str as clusters of
    * one or more digits. Leading zeros affect no values.
+   * @function strStripNumbers
    * @param  {String}  str Any string (as a file name).
    * @return {Array}       Array of integers.
    */
@@ -101,6 +104,7 @@ var helper = exports.helper = (function() {
   }
   /**
    * Compares two arrays of integers, x and y, 'string semantics'.
+   * @function arrayCmp
    * @param  {Array} x   Array of integers.
    * @param  {Array} y   Array of integers.
    * @return {Integer}   Less than zero, zero, greater than zero.
@@ -121,6 +125,7 @@ var helper = exports.helper = (function() {
   }
   /**
    * String comparison, C style.
+   * @function strcmp
    * @param  {String} x  String.
    * @param  {String} y  String.
    * @return {Integer}   Less than zero, zero, greater than zero.
@@ -133,9 +138,10 @@ var helper = exports.helper = (function() {
    * values embedded in the strings, otherwise returns the standard string comparison.
    * The idea of the natural sort as opposed to the standard lexicographic sort is one of coping
    * with the possible absence of the leading zeros in 'numbers' of files or directories.     
+   * @function strcmpNaturally
    * @param  {String/Array} x String or Array of integers.
    * @param  {String/Array} y String or Array of integers.
-   * @return {[type]}         Less than zero, zero, greater than zero.
+   * @return {Integer}         Less than zero, zero, greater than zero.
    */
   function strcmpNaturally(x, y) {
     var a = strStripNumbers(x);
@@ -144,6 +150,7 @@ var helper = exports.helper = (function() {
   }
   /**
    * Returns an array of directories and an array of files under absPath directory.
+   * @function collectDirsAndFiles
    * @param  {String}   absPath       Parent directory.
    * @param  {Function} fileCondition File check function.
    * @return {Object}                 {dirs, files}.
@@ -161,6 +168,7 @@ var helper = exports.helper = (function() {
   }
   /**
    * Counts files in a subtree according to fileCondition.
+   * @function fileCount
    * @param  {String}   dirPath       Root of the subtree.
    * @param  {Function} fileCondition File check function.
    * @return {Integer}                File count.
@@ -176,9 +184,8 @@ var helper = exports.helper = (function() {
     return cnt;
   }
   /**
-   * @function makeInits
-   * @pmemberOf module:helper
    * Reduces a sequence of names to initials.
+   * @function makeInits
    * @param  {String} name  Space Delimited sequence of names.
    * @param  {String} sep   A period separating the initials.
    * @param  {String} trail A period ending the initials.
@@ -193,6 +200,7 @@ var helper = exports.helper = (function() {
   }
   /**
    * Reduces a sequence of names to initials.
+   * @function makeInitials
    * @param  {String} name Space delimited sequence of names.
    * @return {String}      Properly formatted initials.
    */
@@ -214,6 +222,7 @@ var helper = exports.helper = (function() {
 var main = (function(args, helper) {
   /**
    * Compares paths xp and yp naturally, ignoring extensions.
+   * @function comparePath
    * @param  {String}  xp Path.
    * @param  {String}  yp Path.
    * @return {Integer}    Less than zero, zero, greater than zero.
@@ -225,6 +234,7 @@ var main = (function(args, helper) {
   }
   /**
    * Compares file names ignoring extensions, lexicographically or naturally.
+   * @function compareFile
    * @param  {String}  xf Path.
    * @param  {String}  yf Path.
    * @return {Integer}    Less than zero, zero, greater than zero.
@@ -236,6 +246,7 @@ var main = (function(args, helper) {
   }
   /**
    * Checks if pth is an audio file.
+   * @function isAudioFile
    * @param  {String}  pth Path.
    * @return {Boolean}     True, if pth is an audio file.
    */
@@ -246,6 +257,7 @@ var main = (function(args, helper) {
   }
   /**
    * Sorts child directories and files of absPath, separately.
+   * @function listDirGroom
    * @param  {String}  absPath Parent directory.
    * @param  {Boolean} reverse If true, sort in descending order. 
    * @return {Object}  {dirs, files}.
@@ -270,6 +282,18 @@ var main = (function(args, helper) {
     return zeroPad(cntw, i) + '-' +
             (args.unified_name ? args.unified_name + path.extname(name) : name);
   }
+  /**
+   * Recursively traverses the source directory and yields a sequence of
+   * (src, flat dst) sorted pairs; the destination directory and file names
+   * get decorated according to options.
+   * @function traverseFlatDist
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {Array}     flatAcc Result accumulator.
+   * @param  {Array}     fcount  File counter (fcount[0]).
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
   function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
     var groom = listDirGroom(srcDir, false);
     for(var i = 0; i < groom.dirs.length; i++) {
@@ -281,6 +305,18 @@ var main = (function(args, helper) {
       fcount[0]++;
     }
   }
+  /**
+   * Recursively traverses the source directory and yields a sequence of
+   * (src, flat dst) pairs in descending order; the destination directory and file names
+   * get decorated according to options.
+   * @function traverseFlatDstReverse
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {Array}     flatAcc Result accumulator.
+   * @param  {Array}     fcount  File counter (fcount[0]).
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
   function traverseFlatDstReverse(srcDir, dstRoot, flatAcc, fcount, cntw) {
     var groom = listDirGroom(srcDir, true);
     for(i = 0; i < groom.files.length; i++) {
@@ -292,6 +328,18 @@ var main = (function(args, helper) {
       traverseFlatDstReverse(groom.dirs[i], dstRoot, flatAcc, fcount, cntw);
     }
   }
+  /**
+   * Recursively traverses the source directory and yields a sequence of
+   * (src, dst) sorted pairs; the destination directory and file names
+   * get decorated according to options; the destination directory structure is created.
+   * @function traverseTreeDst
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {Array}     flatAcc Result accumulator.
+   * @param  {String}    dstStep Path to destination child directory.
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
   function traverseTreeDst(srcDir, dstRoot, flatAcc, dstStep, cntw) {
     var step = '', groom = listDirGroom(srcDir, false);
     for(var i = 0; i < groom.dirs.length; i++) {
@@ -304,6 +352,14 @@ var main = (function(args, helper) {
       flatAcc.push({src: groom.files[i], dst: dst});
     }
   }
+  /**
+   * Traverses the source directory src according to options.
+   * @function groom
+   * @param  {String}  src Source directory.
+   * @param  {String}  dst Destination directory.
+   * @param  {Integer} cnt File count.
+   * @return {Array}   Array of {src, dst} pairs.
+   */
   function groom(src, dst, cnt) {
     var cntw = cnt.toString().length;
     var flatAcc = [];
@@ -319,6 +375,11 @@ var main = (function(args, helper) {
     }
     return flatAcc;
   }
+  /**
+   * Creates album according to options.
+   * @function buildAlbum
+   * @return {Object} {count, [{src, dst}...]}.
+   */
   function buildAlbum() {
     var srcName = path.basename(args.src_dir);
     var prefix = (args.album_num) ? zeroPad(2, args.album_num) + '-' : '';
@@ -342,6 +403,11 @@ var main = (function(args, helper) {
     }
     return {count: tot, belt: belt};
   }
+  /**
+   * Copies album
+   * @function copyAlbum
+   * @return {Undefined} No return value.
+   */
   function copyAlbum() {
     function copyFile(i, total, entry) {
       fs.copySync(entry.src, entry.dst);
