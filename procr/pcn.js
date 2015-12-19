@@ -5,7 +5,6 @@ debugger;
 var __ = require('lodash');
 var path = require('path');
 var fs = require('fs-extra');
-var mt = require('mutagen');
 
 /** @module args */
 var args = (function() {
