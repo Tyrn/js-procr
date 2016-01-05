@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 debugger;
+// Debugging in iron-node
+require("fake-require-main").fakeFor(require, __filename, "electron");
 
 var __ = require('lodash');
 var path = require('path');
@@ -393,8 +395,8 @@ var main = (function(args, helper) {
         fs.mkdirSync(executiveDst);
       }
     }
-    tot = helper.fileCount(args.src_dir, isAudioFile);
-    belt = groom(args.src_dir, executiveDst, tot);
+    var tot = helper.fileCount(args.src_dir, isAudioFile);
+    var belt = groom(args.src_dir, executiveDst, tot);
     if(!args.drop_dst && tot === 0) {
       fs.unlinkSync(executiveDst);
       console.log('There are no supported audio files in the source directory "' + args.src_dir + '".');
