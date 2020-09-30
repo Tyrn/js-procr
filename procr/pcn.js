@@ -193,11 +193,15 @@ var helper = exports.helper = (function() {
    * @param  {String} hyph  A hypen separating double names.
    * @return {String}       Properly formatted initials.
    */
-  function makeInits(name, sep, trail, hyph) {
+  function makeInits(authors, sep, trail, hyph) {
     function splitBySpace(nm) {
-      return nm.trim().split(/\s+/).map(function(x) {return x[0]}).join(sep).toUpperCase();
+      return nm.split(/[\s.]+/).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
     }
-    return name.split(hyph).map(splitBySpace).join(hyph) + trail;
+    function splitByHyph(nm) {
+      return nm.split(/\s*(?:-\s*)+/).map(splitBySpace).join(hyph) + trail;
+    }
+    let sans_monikers = authors.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
+    return sans_monikers.split(",").map(splitByHyph).join(",");
   }
   /**
    * Reduces a sequence of names to initials.
