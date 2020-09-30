@@ -75,6 +75,9 @@ describe('helper', function() {
       assert.equal(helper.makeInitials("Windsor Saxe-\tCoburg - Gotha"), "W.S-C-G.");
       assert.equal(helper.makeInitials("Elisabeth Kubler-- - Ross"), "E.K---R.");
       assert.equal(helper.makeInitials("Fitz-Simmons   Ashton-Burke Leigh"), "F-S.A-B.L.");
+      //assert.equal(helper.makeInitials("A. Strugatsky, B...Strugatsky."), "A.S.,B.S.");
+      //assert.equal(helper.makeInitials("Иржи Кропачек, Йозеф Новотный"), "И.К.,Й.Н.");
+      assert.equal(helper.makeInitials("österreich"), "Ö.");
     });
   });
 });
