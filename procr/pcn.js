@@ -195,10 +195,12 @@ var helper = exports.helper = (function() {
    */
   function makeInits(authors, sep, trail, hyph) {
     function splitBySpace(nm) {
-      return nm.split(/[\s.]+/).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
+      let reg = new RegExp(`[\\s${sep}]+`)
+      return nm.split(reg).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
     }
     function splitByHyph(nm) {
-      return nm.split(/\s*(?:-\s*)+/).map(splitBySpace).join(hyph) + trail;
+      let reg = new RegExp(`\\s*(?:${hyph}\\s*)+`)
+      return nm.split(reg).map(splitBySpace).join(hyph) + trail;
     }
     let sans_monikers = authors.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
     return sans_monikers.split(",").map(splitByHyph).join(",");
@@ -209,8 +211,8 @@ var helper = exports.helper = (function() {
    * @param  {String} name Space delimited sequence of names.
    * @return {String}      Properly formatted initials.
    */
-  function makeInitials(name) {
-    return makeInits(name, '.', '.', '-');
+  function makeInitials(authors) {
+    return makeInits(authors, '.', '.', '-');
   }
   return {
     sansExt: sansExt,
