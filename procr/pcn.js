@@ -294,12 +294,12 @@ var main = (function(args, helper) {
    */
   function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
     var groom = listDirGroom(srcDir, false);
-    for(var i = 0; i < groom.dirs.length; i++) {
-      traverseFlatDst(groom.dirs[i], dstRoot, flatAcc, fcount, cntw);
+    for(let dir of groom.dirs) {
+      traverseFlatDst(dir, dstRoot, flatAcc, fcount, cntw);
     }
-    for(i = 0; i < groom.files.length; i++) {
-      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(groom.files[i])));
-      flatAcc.push({src: groom.files[i], dst: dst});
+    for(let file of groom.files) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
+      flatAcc.push({src: file, dst: dst});
       fcount[0]++;
     }
   }
@@ -317,13 +317,13 @@ var main = (function(args, helper) {
    */
   function traverseFlatDstReverse(srcDir, dstRoot, flatAcc, fcount, cntw) {
     var groom = listDirGroom(srcDir, true);
-    for(i = 0; i < groom.files.length; i++) {
-      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(groom.files[i])));
-      flatAcc.push({src: groom.files[i], dst: dst});
+    for(let file of groom.files) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
+      flatAcc.push({src: file, dst: dst});
       fcount[0]--;
     }
-    for(var i = 0; i < groom.dirs.length; i++) {
-      traverseFlatDstReverse(groom.dirs[i], dstRoot, flatAcc, fcount, cntw);
+    for(let dir of groom.dirs) {
+      traverseFlatDstReverse(dir, dstRoot, flatAcc, fcount, cntw);
     }
   }
   /**
