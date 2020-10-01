@@ -157,12 +157,12 @@ var helper = exports.helper = (function() {
    * @return {Object}                 {dirs, files}.
    */
   function collectDirsAndFiles(absPath, fileCondition) {
-    var lst = fs.readdirSync(absPath).map(function(x) {return path.join(absPath, x)});
+    var lst = fs.readdirSync(absPath).map(x => path.join(absPath, x));
     var dirs = [], files = [];
-    for(var i = 0; i < lst.length; i++) {
-      if(fs.lstatSync(lst[i]).isDirectory()) dirs.push(lst[i]);
+    for(const entry of lst) {
+      if(fs.lstatSync(entry).isDirectory()) dirs.push(entry);
       else {
-        if(fileCondition(lst[i])) files.push(lst[i]);
+        if(fileCondition(entry)) files.push(entry);
       }
     }
     return {dirs: dirs, files: files};
@@ -176,11 +176,11 @@ var helper = exports.helper = (function() {
    */
   function fileCount(dirPath, fileCondition) {
     var cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
-    for(var i = 0; i < haul.dirs.length; i++) {
-      cnt += fileCount(haul.dirs[i], fileCondition);
+    for(const dir of haul.dirs) {
+      cnt += fileCount(dir, fileCondition);
     };
-    for(i = 0; i < haul.files.length; i++) {
-      if(fileCondition(haul.files[i])) cnt++;
+    for(const file of haul.files) {
+      if(fileCondition(file)) cnt++;
     }
     return cnt;
   }
@@ -194,12 +194,12 @@ var helper = exports.helper = (function() {
    * @return {String}       Properly formatted initials.
    */
   function makeInitials(names, sep=".", trail=".", hyph="-") {
-    function splitBySpace(nm) {
-      let reg = new RegExp(`[\\s${sep}]+`)
+    const splitBySpace = nm => {
+      let reg = new RegExp(`[\\s${sep}]+`);
       return nm.split(reg).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
     }
-    function splitByHyph(nm) {
-      let reg = new RegExp(`\\s*(?:${hyph}\\s*)+`)
+    const splitByHyph = nm => {
+      let reg = new RegExp(`\\s*(?:${hyph}\\s*)+`);
       return nm.split(reg).map(splitBySpace).join(hyph) + trail;
     }
     let sans_monikers = names.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
@@ -282,36 +282,13 @@ var main = (function(args, helper) {
   }
   /**
    * Recursively traverses the source directory and yields a sequence of
-   * (src, flat dst) pairs in descending order; the destination directory and file names
-   * get decorated according to options.
-   * @function traverseFlatDstReverse
-   * @param  {String}    srcDir  Source directory.
-   * @param  {String}    dstRoot Destination directory.
-   * @param  {Array}     flatAcc Result accumulator.
-   * @param  {Array}     fcount  File counter (fcount[0]).
-   * @param  {Integer}   cntw    File number width.
-   * @return {Undefined}         No return value.
-   */
-  function* traverseFlatDstReverse(srcDir, dstRoot, fcount, cntw) {
-    var groom = listDirGroom(srcDir, true);
-    for(let file of groom.files) {
-      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
-      yield [fcount[0], {src: file, dst: dst}];
-      fcount[0]--;
-    }
-    for(let dir of groom.dirs) {
-      yield* traverseFlatDstReverse(dir, dstRoot, fcount, cntw);
-    }
-  }
-  /**
-   * Recursively traverses the source directory and yields a sequence of
    * (src, dst) sorted pairs; the destination directory and file names
    * get decorated according to options; the destination directory structure is created.
    * @function traverseTreeDst
    * @param  {String}    srcDir  Source directory.
    * @param  {String}    dstRoot Destination directory.
-   * @param  {Array}     flatAcc Result accumulator.
    * @param  {String}    dstStep Path to destination child directory.
+   * @param  {Array}     fcount  File counter (fcount[0]).
    * @param  {Integer}   cntw    File number width.
    * @return {Undefined}         No return value.
    */
@@ -330,12 +307,33 @@ var main = (function(args, helper) {
   }
   /**
    * Recursively traverses the source directory and yields a sequence of
+   * (src, flat dst) pairs in descending order; the destination directory and file names
+   * get decorated according to options.
+   * @function traverseFlatDstReverse
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {Array}     fcount  File counter (fcount[0]).
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
+  function* traverseFlatDstReverse(srcDir, dstRoot, fcount, cntw) {
+    var groom = listDirGroom(srcDir, true);
+    for(let file of groom.files) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
+      yield [fcount[0], {src: file, dst: dst}];
+      fcount[0]--;
+    }
+    for(let dir of groom.dirs) {
+      yield* traverseFlatDstReverse(dir, dstRoot, fcount, cntw);
+    }
+  }
+  /**
+   * Recursively traverses the source directory and yields a sequence of
    * (src, flat dst) sorted pairs; the destination directory and file names
    * get decorated according to options.
    * @function traverseFlatDist
    * @param  {String}    srcDir  Source directory.
    * @param  {String}    dstRoot Destination directory.
-   * @param  {Array}     flatAcc Result accumulator.
    * @param  {Array}     fcount  File counter (fcount[0]).
    * @param  {Integer}   cntw    File number width.
    * @return {Undefined}         No return value.
