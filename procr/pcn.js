@@ -292,15 +292,15 @@ var main = (function(args, helper) {
    * @param  {Integer}   cntw    File number width.
    * @return {Undefined}         No return value.
    */
-  function traverseFlatDstReverse(srcDir, dstRoot, flatAcc, fcount, cntw) {
+  function* traverseFlatDstReverse(srcDir, dstRoot, fcount, cntw) {
     var groom = listDirGroom(srcDir, true);
     for(let file of groom.files) {
       var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
-      flatAcc.push({src: file, dst: dst});
+      yield [fcount[0], {src: file, dst: dst}];
       fcount[0]--;
     }
     for(let dir of groom.dirs) {
-      traverseFlatDstReverse(dir, dstRoot, flatAcc, fcount, cntw);
+      yield* traverseFlatDstReverse(dir, dstRoot, fcount, cntw);
     }
   }
   /**
@@ -315,16 +315,17 @@ var main = (function(args, helper) {
    * @param  {Integer}   cntw    File number width.
    * @return {Undefined}         No return value.
    */
-  function traverseTreeDst(srcDir, dstRoot, flatAcc, dstStep, cntw) {
+  function* traverseTreeDst(srcDir, dstRoot, dstStep, fcount, cntw) {
     var step = '', groom = listDirGroom(srcDir, false);
-    for(var i = 0; i < groom.dirs.length; i++) {
-      step = path.join(dstStep, decorateDirName(i, path.basename(groom.dirs[i])));
+    for(const [i, dir] of groom.dirs.entries()) {
+      step = path.join(dstStep, decorateDirName(i + 1, path.basename(dir)));
       fs.mkdirSync(path.join(dstRoot, step));
-      traverseTreeDst(groom.dirs[i], dstRoot, flatAcc, step, cntw);
+      yield* traverseTreeDst(dir, dstRoot, step, fcount, cntw);
     }
-    for(i = 0; i < groom.files.length; i++) {
-      var dst = path.join(dstRoot, path.join(dstStep, decorateFileName(cntw, i, path.basename(groom.files[i]))));
-      flatAcc.push({src: groom.files[i], dst: dst});
+    for(const [i, file] of groom.files.entries()) {
+      var dst = path.join(dstRoot, path.join(dstStep, decorateFileName(cntw, i + 1, path.basename(file))));
+      yield [fcount[0], {src: file, dst: dst}];
+      fcount[0]++;
     }
   }
   /**
@@ -339,14 +340,14 @@ var main = (function(args, helper) {
    * @param  {Integer}   cntw    File number width.
    * @return {Undefined}         No return value.
    */
-  function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
+  function* traverseFlatDst(srcDir, dstRoot, fcount, cntw) {
     var groom = listDirGroom(srcDir, false);
     for(let dir of groom.dirs) {
-      traverseFlatDst(dir, dstRoot, flatAcc, fcount, cntw);
+      yield* traverseFlatDst(dir, dstRoot, fcount, cntw);
     }
     for(let file of groom.files) {
       var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
-      flatAcc.push({src: file, dst: dst});
+      yield [fcount[0], {src: file, dst: dst}];
       fcount[0]++;
     }
   }
@@ -360,18 +361,16 @@ var main = (function(args, helper) {
    */
   function groom(src, dst, cnt) {
     var cntw = cnt.toString().length;
-    var flatAcc = [];
 
     if(args.tree_dst) {
-      traverseTreeDst(src, dst, flatAcc, '', cntw);
+      return traverseTreeDst(src, dst, '', [1], cntw);
     } else {
       if(args.reverse) {
-        traverseFlatDstReverse(src, dst, flatAcc, [cnt], cntw);
+        return traverseFlatDstReverse(src, dst, [cnt], cntw);
       } else {
-        traverseFlatDst(src, dst, flatAcc, [1], cntw);
+        return traverseFlatDst(src, dst, [1], cntw);
       }
     }
-    return flatAcc;
   }
   /**
    * Creates album according to options.
@@ -411,16 +410,10 @@ var main = (function(args, helper) {
       fs.copySync(entry.src, entry.dst);
       console.log(spacePad(4, i) + '/' + total + ' \u2665 ' + entry.dst);
     }
-    var alb = buildAlbum();
+    let alb = buildAlbum();
 
-    if(args.reverse) {
-      for(const [i, entry] of alb.belt.entries()) {
-        copyFile(alb.count - i, alb.count, entry);
-      }
-    } else {
-      for(const [i, entry] of alb.belt.entries()) {
-        copyFile(i + 1, alb.count, entry);
-      }
+    for(const [i, entry] of alb.belt) {
+      copyFile(i, alb.count, entry);
     }
   }
   return {  
