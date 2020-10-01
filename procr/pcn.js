@@ -282,29 +282,6 @@ var main = (function(args, helper) {
   }
   /**
    * Recursively traverses the source directory and yields a sequence of
-   * (src, flat dst) sorted pairs; the destination directory and file names
-   * get decorated according to options.
-   * @function traverseFlatDist
-   * @param  {String}    srcDir  Source directory.
-   * @param  {String}    dstRoot Destination directory.
-   * @param  {Array}     flatAcc Result accumulator.
-   * @param  {Array}     fcount  File counter (fcount[0]).
-   * @param  {Integer}   cntw    File number width.
-   * @return {Undefined}         No return value.
-   */
-  function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
-    var groom = listDirGroom(srcDir, false);
-    for(let dir of groom.dirs) {
-      traverseFlatDst(dir, dstRoot, flatAcc, fcount, cntw);
-    }
-    for(let file of groom.files) {
-      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
-      flatAcc.push({src: file, dst: dst});
-      fcount[0]++;
-    }
-  }
-  /**
-   * Recursively traverses the source directory and yields a sequence of
    * (src, flat dst) pairs in descending order; the destination directory and file names
    * get decorated according to options.
    * @function traverseFlatDstReverse
@@ -348,6 +325,29 @@ var main = (function(args, helper) {
     for(i = 0; i < groom.files.length; i++) {
       var dst = path.join(dstRoot, path.join(dstStep, decorateFileName(cntw, i, path.basename(groom.files[i]))));
       flatAcc.push({src: groom.files[i], dst: dst});
+    }
+  }
+  /**
+   * Recursively traverses the source directory and yields a sequence of
+   * (src, flat dst) sorted pairs; the destination directory and file names
+   * get decorated according to options.
+   * @function traverseFlatDist
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {Array}     flatAcc Result accumulator.
+   * @param  {Array}     fcount  File counter (fcount[0]).
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
+  function traverseFlatDst(srcDir, dstRoot, flatAcc, fcount, cntw) {
+    var groom = listDirGroom(srcDir, false);
+    for(let dir of groom.dirs) {
+      traverseFlatDst(dir, dstRoot, flatAcc, fcount, cntw);
+    }
+    for(let file of groom.files) {
+      var dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
+      flatAcc.push({src: file, dst: dst});
+      fcount[0]++;
     }
   }
   /**
@@ -414,12 +414,12 @@ var main = (function(args, helper) {
     var alb = buildAlbum();
 
     if(args.reverse) {
-      for(var i = 0; i < alb.count; i++) {
-        copyFile(alb.count - i, alb.count, alb.belt[i]);
+      for(const [i, entry] of alb.belt.entries()) {
+        copyFile(alb.count - i, alb.count, entry);
       }
     } else {
-      for(var i = 0; i < alb.count; i++) {
-        copyFile(i + 1, alb.count, alb.belt[i]);
+      for(const [i, entry] of alb.belt.entries()) {
+        copyFile(i + 1, alb.count, entry);
       }
     }
   }
