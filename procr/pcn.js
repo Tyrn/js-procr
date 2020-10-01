@@ -263,8 +263,8 @@ var main = (function(args, helper) {
   function listDirGroom(absPath, reverse) {
     var haul = helper.collectDirsAndFiles(absPath, isAudioFile);
     return {
-      dirs: haul.dirs.sort(reverse ? function(xp, yp) {return -comparePath(xp, yp)} : comparePath),
-      files: haul.files.sort(reverse ? function(xf, yf) {return -compareFile(xf, yf)} : compareFile)
+      dirs: haul.dirs.sort(reverse ? (xp, yp) => -comparePath(xp, yp) : comparePath),
+      files: haul.files.sort(reverse ? (xf, yf) => -compareFile(xf, yf) : compareFile)
     };
   }
   function zeroPad(w, i) {
