@@ -186,14 +186,14 @@ var helper = exports.helper = (function() {
   }
   /**
    * Reduces a sequence of names to initials.
-   * @function makeInits
-   * @param  {String} name  Space Delimited sequence of names.
+   * @function makeInitials
+   * @param  {String} names Space Delimited sequence of names.
    * @param  {String} sep   A period separating the initials.
    * @param  {String} trail A period ending the initials.
    * @param  {String} hyph  A hypen separating double names.
    * @return {String}       Properly formatted initials.
    */
-  function makeInits(authors, sep, trail, hyph) {
+  function makeInitials(names, sep=".", trail=".", hyph="-") {
     function splitBySpace(nm) {
       let reg = new RegExp(`[\\s${sep}]+`)
       return nm.split(reg).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
@@ -202,17 +202,8 @@ var helper = exports.helper = (function() {
       let reg = new RegExp(`\\s*(?:${hyph}\\s*)+`)
       return nm.split(reg).map(splitBySpace).join(hyph) + trail;
     }
-    let sans_monikers = authors.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
+    let sans_monikers = names.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
     return sans_monikers.split(",").map(splitByHyph).join(",");
-  }
-  /**
-   * Reduces a sequence of names to initials.
-   * @function makeInitials
-   * @param  {String} name Space delimited sequence of names.
-   * @return {String}      Properly formatted initials.
-   */
-  function makeInitials(authors) {
-    return makeInits(authors, '.', '.', '-');
   }
   return {
     sansExt: sansExt,
