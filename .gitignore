@@ -1,5 +1,11 @@
 node_modules/
 out/
 build/
-*.vim
 *.log
+
+# IDE
+*.vim
+*.geany
+.idea
+*.sublime-project
+*.sublime-workspace
