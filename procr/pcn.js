@@ -39,6 +39,10 @@ var args = (function() {
     action: 'storeTrue'});
   parser.addArgument(['-r', '--reverse'], {help: "copy files in reverse order (number one file is the last to be copied)",
     action: 'storeTrue'});
+  parser.addArgument(['-w', '--overwrite'], {help: "silently remove existing destination directory (not recommended)",
+    action: 'storeTrue'});
+  parser.addArgument(['-y', '--dry-run'], {help: "without actually copying the files",
+    action: 'storeTrue'});
   parser.addArgument(['-e', '--file-type'], {help: "accept only audio files of the specified type"});
   parser.addArgument(['-u', '--unified-name'],
     {
@@ -350,6 +354,59 @@ var main = (function(args, helper) {
     }
   }
   /**
+   * Recursively traverses the source directory and yields a sequence of
+   * (src, dst) sorted pairs; the destination directory and file names
+   * get decorated according to options; the destination directory structure is created.
+   * @function walkFileTree
+   * @param  {String}    srcDir  Source directory.
+   * @param  {String}    dstRoot Destination directory.
+   * @param  {String}    dstStep Path to destination child directory.
+   * @param  {Array}     fcount  File counter (fcount[0]).
+   * @param  {Integer}   cntw    File number width.
+   * @return {Undefined}         No return value.
+   */
+  function* walkFileTree(srcDir, dstRoot, dstStep, fcount, cntw) {
+    const step = '', groom = listDirGroom(srcDir, args.reverse);
+
+    function* dirFlat(dirs) {
+      for(const dir of dirs) {
+        yield* walkFileTree(dir, dstRoot, '', fcount, cntw);
+      }
+    }
+    function* fileFlat(files) {
+      for(const file of files) {
+        const dst = path.join(dstRoot, decorateFileName(cntw, fcount[0], path.basename(file)));
+        yield [fcount[0], {src: file, dst: dst}];
+        fcount[0]++;
+      }
+    }
+    function reverse(i, lst) {
+      return args.reverse ? lst.length - i : i + 1;
+    }
+    function* dirTree(dirs) {
+      for(const [i, dir] of dirs.entries()) {
+        const step = path.join(dstStep, decorateDirName(reverse(i, dirs), path.basename(dir)));
+        fs.mkdirSync(path.join(dstRoot, step));
+        yield* walkFileTree(dir, dstRoot, step, fcount, cntw);
+      }
+    }
+    function* fileTree(files) {
+      for(const [i, file] of files.entries()) {
+        const dst = path.join(dstRoot, path.join(dstStep, decorateFileName(cntw, reverse(i, files), path.basename(file))));
+        yield [fcount[0], {src: file, dst: dst}];
+        fcount[0]++;
+      }
+    }
+    const [dirFund, fileFund] = args.tree_dst ? [dirTree, fileTree] : [dirFlat, fileFlat];
+    if(args.reverse) {
+      yield* fileFund(groom.files);
+      yield* dirFund(groom.dirs);
+    } else {
+      yield* dirFund(groom.dirs);
+      yield* fileFund(groom.files);
+    }
+  }
+  /**
    * Traverses the source directory src according to options.
    * @function groom
    * @param  {String}  src Source directory.
@@ -357,7 +414,7 @@ var main = (function(args, helper) {
    * @param  {Integer} cnt File count.
    * @return {Array}   Array of {src, dst} pairs.
    */
-  function groom(src, dst, cnt) {
+  function groom_old(src, dst, cnt) {
     var cntw = cnt.toString().length;
 
     if(args.tree_dst) {
@@ -369,6 +426,19 @@ var main = (function(args, helper) {
         return traverseFlatDst(src, dst, [1], cntw);
       }
     }
+  }
+  /**
+   * Traverses the source directory src according to options.
+   * @function groom
+   * @param  {String}  src Source directory.
+   * @param  {String}  dst Destination directory.
+   * @param  {Integer} cnt File count.
+   * @return {Array}   Array of {src, dst} pairs.
+   */
+  function groom(src, dst, cnt) {
+    var cntw = cnt.toString().length;
+
+    return walkFileTree(src, dst, '', [args.reverse ? cnt : 1], cntw);
   }
   /**
    * Creates album according to options.
