@@ -360,11 +360,19 @@ var main = (function(args, helper) {
     var baseDst = prefix + (args.unified_name ? args.unified_name : srcName);
     var executiveDst = path.join(args.dst_dir, args.drop_dst ? '' : baseDst);
 
-    if(!args.drop_dst) {
+    if(!args.drop_dst && !args.dry_run) {
       if(fs.existsSync(executiveDst)) {
-        console.log('Destination directory "' + executiveDst + '" already exists.');
-        process.exit();
-      } else {
+        if(args.overwrite) {
+          try {
+            fs.rmdirSync(executiveDst, { recursive: true });
+          } catch (err) {
+            console.error(`Failed to remove "${executive_dst}".`);
+            process.exit();
+          }          
+        } else {
+          console.log('Destination directory "' + executiveDst + '" already exists.');
+          process.exit();
+        }
         fs.mkdirSync(executiveDst);
       }
     }
@@ -385,12 +393,14 @@ var main = (function(args, helper) {
   function copyAlbum() {
     function copyFile(total, entry) {
       const dst = path.join(entry.dst_path, entry.target);
-      if(!fs.existsSync(entry.dst_path)) {
-        fs.mkdirSync(entry.dst_path, {
-          recursive: true
-        });
-      } 
-      fs.copySync(entry.src, dst);
+      if(!args.dry_run) {
+        if(!fs.existsSync(entry.dst_path)) {
+          fs.mkdirSync(entry.dst_path, {
+            recursive: true
+          });
+        } 
+        fs.copySync(entry.src, dst);
+      }
       console.log(spacePad(4, entry.index) + '/' + total + ' \u2665 ' + dst);
     }
     let alb = buildAlbum();
