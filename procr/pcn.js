@@ -4,16 +4,16 @@ debugger;
 // Debugging in iron-node
 require("fake-require-main").fakeFor(require, __filename, "electron");
 
-var __ = require('lodash');
-var path = require('path');
-var fs = require('fs-extra');
+const __ = require('lodash');
+const path = require('path');
+const fs = require('fs-extra');
 
 /** @module args */
-var args = (function() {
+const args = (function() {
   if(require.main !== module) return null;  
 
-  var ArgumentParser = require('argparse').ArgumentParser;
-  var parser = new ArgumentParser({
+  const ArgumentParser = require('argparse').ArgumentParser;
+  const parser = new ArgumentParser({
     version: '0.0.1',
     addHelp: true,
     description:
@@ -58,7 +58,7 @@ var args = (function() {
   parser.addArgument(['src_dir'], {help: "source directory"});
   parser.addArgument(['dst_dir'], {help: "general destination directory"});
 
-  var rg = parser.parseArgs();
+  const rg = parser.parseArgs();
 
   rg.src_dir = path.resolve(rg.src_dir);
   rg.dst_dir = path.resolve(rg.dst_dir);
@@ -69,7 +69,7 @@ var args = (function() {
   return rg;
 })();
 /** @module helper */
-var helper = exports.helper = (function() {
+const helper = exports.helper = (function() {
   /**
    * Returns path pth with extension discarded.
    * @function sansExt
@@ -77,7 +77,7 @@ var helper = exports.helper = (function() {
    * @return {String}     Path with extension discarded.
    */
   function sansExt(pth) {
-    var parts = path.parse(pth);
+    const parts = path.parse(pth);
     return path.join(parts.dir, parts.name);
   }
   /**
@@ -89,7 +89,7 @@ var helper = exports.helper = (function() {
    * @return {Boolean}     Extension is present.
    */
   function hasExtOf(pth, ext) {
-    var extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
+    const extension = (ext === '' || ext[0] === '.') ? ext : '.' + ext;
     return path.extname(pth).toUpperCase() === extension.toUpperCase();
   }
   /**
@@ -100,7 +100,7 @@ var helper = exports.helper = (function() {
    * @return {Array}       Array of integers.
    */
   function strStripNumbers(str) {
-    var match = str.match(/\d+/g);
+    const match = str.match(/\d+/g);
     return (match) ? match.map(__.parseInt) : match;  // null, if no digits encountered.
   }
   /**
@@ -145,8 +145,8 @@ var helper = exports.helper = (function() {
    * @return {Integer}         Less than zero, zero, greater than zero.
    */
   function strcmpNaturally(x, y) {
-    var a = strStripNumbers(x);
-    var b = strStripNumbers(y);
+    const a = strStripNumbers(x);
+    const b = strStripNumbers(y);
     return (a && b) ? arrayCmp(a, b) : strcmp(x, y);
   }
   /**
@@ -157,8 +157,8 @@ var helper = exports.helper = (function() {
    * @return {Object}                 {dirs, files}.
    */
   function collectDirsAndFiles(absPath, fileCondition) {
-    var lst = fs.readdirSync(absPath).map(x => path.join(absPath, x));
-    var dirs = [], files = [];
+    const lst = fs.readdirSync(absPath).map(x => path.join(absPath, x));
+    const dirs = [], files = [];
     for(const entry of lst) {
       if(fs.lstatSync(entry).isDirectory()) dirs.push(entry);
       else {
@@ -175,7 +175,7 @@ var helper = exports.helper = (function() {
    * @return {Integer}                File count.
    */
   function fileCount(dirPath, fileCondition) {
-    var cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
+    let cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
     for(const dir of haul.dirs) {
       cnt += fileCount(dir, fileCondition);
     };
@@ -195,14 +195,14 @@ var helper = exports.helper = (function() {
    */
   function makeInitials(names, sep=".", trail=".", hyph="-") {
     const splitBySpace = nm => {
-      let reg = new RegExp(`[\\s${sep}]+`);
+      const reg = new RegExp(`[\\s${sep}]+`);
       return nm.split(reg).filter(x => x).map(x => x[0]).join(sep).toUpperCase();
     }
     const splitByHyph = nm => {
-      let reg = new RegExp(`\\s*(?:${hyph}\\s*)+`);
+      const reg = new RegExp(`\\s*(?:${hyph}\\s*)+`);
       return nm.split(reg).map(splitBySpace).join(hyph) + trail;
     }
-    let sans_monikers = names.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
+    const sans_monikers = names.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
     return sans_monikers.split(",").map(splitByHyph).join(",");
   }
   return {
@@ -217,7 +217,7 @@ var helper = exports.helper = (function() {
   }
 })();
 /** @module main */
-var main = (function(args, helper) {
+const main = (function(args, helper) {
   /**
    * Compares paths xp and yp naturally, ignoring extensions.
    * @function comparePath
@@ -226,8 +226,8 @@ var main = (function(args, helper) {
    * @return {Integer}    Less than zero, zero, greater than zero.
    */
   function comparePath(xp, yp) {
-    var x = helper.sansExt(xp);
-    var y = helper.sansExt(yp);
+    const x = helper.sansExt(xp);
+    const y = helper.sansExt(yp);
     return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
   /**
@@ -238,8 +238,8 @@ var main = (function(args, helper) {
    * @return {Integer}    Less than zero, zero, greater than zero.
    */
   function compareFile(xf, yf) {
-    var x = helper.sansExt(path.parse(xf).base);
-    var y = helper.sansExt(path.parse(yf).base);
+    const x = helper.sansExt(path.parse(xf).base);
+    const y = helper.sansExt(path.parse(yf).base);
     return (args.sort_lex) ? helper.strcmp(x, y) : helper.strcmpNaturally(x, y);
   }
   /**
@@ -261,7 +261,7 @@ var main = (function(args, helper) {
    * @return {Object}  {dirs, files}.
    */
   function listDirGroom(absPath, reverse) {
-    var haul = helper.collectDirsAndFiles(absPath, isAudioFile);
+    const haul = helper.collectDirsAndFiles(absPath, isAudioFile);
     return {
       dirs: haul.dirs.sort(reverse ? (xp, yp) => -comparePath(xp, yp) : comparePath),
       files: haul.files.sort(reverse ? (xf, yf) => -compareFile(xf, yf) : compareFile)
@@ -297,7 +297,7 @@ var main = (function(args, helper) {
 
     function* dirFlat(dirs) {
       for(const dir of dirs) {
-        let step = [...dstStep];
+        const step = [...dstStep];
         step.push(path.basename(dir));
         yield* walkFileTree(dir, dstRoot, step, fcount, cntw);
       }
@@ -314,7 +314,7 @@ var main = (function(args, helper) {
     }
     function* dirTree(dirs) {
       for(const [i, dir] of dirs.entries()) {
-        let step = [...dstStep];
+        const step = [...dstStep];
         step.push(decorateDirName(reverse(i, dirs), path.basename(dir)));
         yield* walkFileTree(dir, dstRoot, step, fcount, cntw);
       }
@@ -345,7 +345,7 @@ var main = (function(args, helper) {
    * @return {Array}   Array of {src, dst} pairs.
    */
   function groom(src, dst, cnt) {
-    var cntw = cnt.toString().length;
+    const cntw = cnt.toString().length;
 
     return walkFileTree(src, dst, [], [args.reverse ? cnt : 1], cntw);
   }
@@ -355,10 +355,10 @@ var main = (function(args, helper) {
    * @return {Object} {count, [{src, dst}...]}.
    */
   function buildAlbum() {
-    var srcName = path.basename(args.src_dir);
-    var prefix = (args.album_num) ? zeroPad(2, args.album_num) + '-' : '';
-    var baseDst = prefix + (args.unified_name ? args.unified_name : srcName);
-    var executiveDst = path.join(args.dst_dir, args.drop_dst ? '' : baseDst);
+    const srcName = path.basename(args.src_dir);
+    const prefix = (args.album_num) ? zeroPad(2, args.album_num) + '-' : '';
+    const baseDst = prefix + (args.unified_name ? args.unified_name : srcName);
+    const executiveDst = path.join(args.dst_dir, args.drop_dst ? '' : baseDst);
 
     if(!args.drop_dst && !args.dry_run) {
       if(fs.existsSync(executiveDst)) {
@@ -376,8 +376,8 @@ var main = (function(args, helper) {
         fs.mkdirSync(executiveDst);
       }
     }
-    var tot = helper.fileCount(args.src_dir, isAudioFile);
-    var belt = groom(args.src_dir, executiveDst, tot);
+    const tot = helper.fileCount(args.src_dir, isAudioFile);
+    const belt = groom(args.src_dir, executiveDst, tot);
     if(!args.drop_dst && tot === 0) {
       fs.unlinkSync(executiveDst);
       console.log('There are no supported audio files in the source directory "' + args.src_dir + '".');
@@ -403,7 +403,7 @@ var main = (function(args, helper) {
       }
       console.log(spacePad(4, entry.index) + '/' + total + ' \u2665 ' + dst);
     }
-    let alb = buildAlbum();
+    const alb = buildAlbum();
 
     for(const entry of alb.belt) {
       copyFile(alb.count, entry);
