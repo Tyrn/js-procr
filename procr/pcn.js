@@ -157,12 +157,12 @@ const helper = exports.helper = (function() {
    * @return {Object}                 {dirs, files}.
    */
   function collectDirsAndFiles(absPath, fileCondition) {
-    const lst = fs.readdirSync(absPath).map(x => path.join(absPath, x));
+    const lst = fs.readdirSync(absPath);
     const dirs = [], files = [];
     for(const entry of lst) {
-      if(fs.lstatSync(entry).isDirectory()) dirs.push(path.basename(entry));
+      if(fs.lstatSync(path.join(absPath, entry)).isDirectory()) dirs.push(entry);
       else {
-        if(fileCondition(entry)) files.push(path.basename(entry));
+        if(fileCondition(path.join(absPath, entry))) files.push(entry);
       }
     }
     return {dirs: dirs, files: files};
