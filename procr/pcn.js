@@ -43,6 +43,8 @@ const args = (function() {
     action: 'storeTrue'});
   parser.addArgument(['-y', '--dry-run'], {help: "without actually copying the files",
     action: 'storeTrue'});
+  parser.addArgument(['-i', '--prepend-subdir-name'], {help: "prepend current subdirectory name to a file name",
+    action: 'storeTrue'});
   parser.addArgument(['-e', '--file-type'], {help: "accept only audio files of the specified type"});
   parser.addArgument(['-u', '--unified-name'],
     {
@@ -276,8 +278,12 @@ const main = (function(args, helper) {
   function decorateDirName(i, name) {
     return zeroPad(3, i) + '-' + name;
   }
-  function decorateFileName(cntw, i, name) {
-    return zeroPad(cntw, i) + '-' +
+  function decorateFileName(cntw, i, dstStep, name) {
+    const prefix = zeroPad(cntw, i) + (
+      args.prepend_subdir_name && !args.tree_dst && dstStep.length > 0
+      ? '-[' + dstStep.join('^') + ']-' : '-'
+    );
+    return prefix +
             (args.unified_name ? args.unified_name + path.extname(name) : name);
   }
   /**
@@ -304,7 +310,7 @@ const main = (function(args, helper) {
     }
     function* fileFlat(files) {
       for(const file of files) {
-        const tgt = decorateFileName(cntw, fcount[0], path.basename(file));
+        const tgt = decorateFileName(cntw, fcount[0], dstStep, path.basename(file));
         yield {index: fcount[0], src: path.join(srcDir, file), dst_path: dstRoot, target: tgt};
         fcount[0] += args.reverse ? -1 : 1;
       }
@@ -322,7 +328,7 @@ const main = (function(args, helper) {
     function* fileTree(files) {
       for(const [i, file] of files.entries()) {
         const dst = path.join(dstRoot, ...dstStep);
-        const tgt = decorateFileName(cntw, reverse(i, files), path.basename(file));
+        const tgt = decorateFileName(cntw, reverse(i, files), dstStep, path.basename(file));
         yield {index: fcount[0], src: path.join(srcDir, file), dst_path: dst, target: tgt};
         fcount[0] += args.reverse ? -1 : 1;
       }
