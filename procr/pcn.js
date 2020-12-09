@@ -160,9 +160,9 @@ const helper = exports.helper = (function() {
     const lst = fs.readdirSync(absPath).map(x => path.join(absPath, x));
     const dirs = [], files = [];
     for(const entry of lst) {
-      if(fs.lstatSync(entry).isDirectory()) dirs.push(entry);
+      if(fs.lstatSync(entry).isDirectory()) dirs.push(path.basename(entry));
       else {
-        if(fileCondition(entry)) files.push(entry);
+        if(fileCondition(entry)) files.push(path.basename(entry));
       }
     }
     return {dirs: dirs, files: files};
@@ -177,10 +177,10 @@ const helper = exports.helper = (function() {
   function fileCount(dirPath, fileCondition) {
     let cnt = 0, haul = collectDirsAndFiles(dirPath, fileCondition);
     for(const dir of haul.dirs) {
-      cnt += fileCount(dir, fileCondition);
+      cnt += fileCount(path.join(dirPath, dir), fileCondition);
     };
     for(const file of haul.files) {
-      if(fileCondition(file)) cnt++;
+      if(fileCondition(path.join(dirPath, file))) cnt++;
     }
     return cnt;
   }
@@ -299,13 +299,13 @@ const main = (function(args, helper) {
       for(const dir of dirs) {
         const step = [...dstStep];
         step.push(path.basename(dir));
-        yield* walkFileTree(dir, dstRoot, step, fcount, cntw);
+        yield* walkFileTree(path.join(srcDir, dir), dstRoot, step, fcount, cntw);
       }
     }
     function* fileFlat(files) {
       for(const file of files) {
         const tgt = decorateFileName(cntw, fcount[0], path.basename(file));
-        yield {index: fcount[0], src: file, dst_path: dstRoot, target: tgt};
+        yield {index: fcount[0], src: path.join(srcDir, file), dst_path: dstRoot, target: tgt};
         fcount[0] += args.reverse ? -1 : 1;
       }
     }
@@ -316,14 +316,14 @@ const main = (function(args, helper) {
       for(const [i, dir] of dirs.entries()) {
         const step = [...dstStep];
         step.push(decorateDirName(reverse(i, dirs), path.basename(dir)));
-        yield* walkFileTree(dir, dstRoot, step, fcount, cntw);
+        yield* walkFileTree(path.join(srcDir, dir), dstRoot, step, fcount, cntw);
       }
     }
     function* fileTree(files) {
       for(const [i, file] of files.entries()) {
         const dst = path.join(dstRoot, ...dstStep);
         const tgt = decorateFileName(cntw, reverse(i, files), path.basename(file));
-        yield {index: fcount[0], src: file, dst_path: dst, target: tgt};
+        yield {index: fcount[0], src: path.join(srcDir, file), dst_path: dst, target: tgt};
         fcount[0] += args.reverse ? -1 : 1;
       }
     }
