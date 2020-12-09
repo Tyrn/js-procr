@@ -12,9 +12,11 @@ const fs = require("fs-extra");
 const args = (function () {
   if (require.main !== module) return null;
 
+  const version = "v1.0.0";
+
   const ArgumentParser = require("argparse").ArgumentParser;
   const parser = new ArgumentParser({
-    //version: "0.0.1",
+    //version: version,
     addHelp: true,
     description: [
       'pcn "Procrustes" SmArT is a CLI utility for copying subtrees containing supported audio',
@@ -31,7 +33,7 @@ const args = (function () {
   parser.addArgument(["-V", "--version"], {
     help: "package version",
     action: "version",
-    version: "v1.0.0",
+    version: version,
   });
   parser.addArgument(["-v", "--verbose"], {
     help: "verbose output",
