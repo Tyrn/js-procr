@@ -11,6 +11,13 @@ Build and install
     ...
     $ pcn --help
 
+Format source
+=============
+
+::
+
+    $ npx prettier --write .
+
 Description
 ===========
 
@@ -39,7 +46,7 @@ Options
 ``-h, --help``
 short description and options
 
-``-v, --verbose``
+``-V, --verbose``
 unless verbose, just progress bar is shown
 
 ``-d, --drop-tracknumber``
@@ -72,11 +79,11 @@ silently remove existing destination directory (not recommended)
 ``-y, --dry-run``
 without actually copying the files
 
-``-e, --file-type FILE_TYPE``
-accept only audio files of the specified type
-
 ``-i, --prepend-subdir-name``
 prepend current subdirectory name to a file name
+
+``-e, --file-type FILE_TYPE``
+accept only audio files of the specified type
 
 ``-u, --unified-name UNIFIED_NAME``
 destination root directory name and file names are based on UNIFIED_NAME,
