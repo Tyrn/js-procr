@@ -29,6 +29,8 @@ const args = (function() {
       ].join(' ')
   });
 
+  parser.addArgument(['-V', '--verbose'], {help: "verbose output",
+    action: 'storeTrue'});
   parser.addArgument(['-f', '--file-title'], {help: "use file name for title tag",
     action: 'storeTrue'});
   parser.addArgument(['-x', '--sort-lex'], {help: "sort files lexicographically",
@@ -407,12 +409,22 @@ const main = (function(args, helper) {
         } 
         fs.copySync(entry.src, dst);
       }
-      console.log(spacePad(4, entry.index) + '/' + total + ' \u2665 ' + dst);
+      if(args.verbose) {
+        console.log(spacePad(4, entry.index) + '/' + total + ' \u{1f509} ' + dst);
+      } else {
+        process.stdout.write('.');
+      }
     }
     const alb = buildAlbum();
 
+    if(!args.verbose) {
+      process.stdout.write("Starting ");
+    }
     for(const entry of alb.belt) {
       copyFile(alb.count, entry);
+    }
+    if(!args.verbose) {
+      process.stdout.write(` Done (${alb.count}).\n`);
     }
   }
   return {  
