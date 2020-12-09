@@ -14,7 +14,7 @@ const args = (function () {
 
   const ArgumentParser = require("argparse").ArgumentParser;
   const parser = new ArgumentParser({
-    version: "0.0.1",
+    //version: "0.0.1",
     addHelp: true,
     description: [
       'pcn "Procrustes" SmArT is a CLI utility for copying subtrees containing supported audio',
@@ -28,7 +28,12 @@ const args = (function () {
     ].join(" "),
   });
 
-  parser.addArgument(["-V", "--verbose"], {
+  parser.addArgument(["-V", "--version"], {
+    help: "package version",
+    action: "version",
+    version: "v1.0.0",
+  });
+  parser.addArgument(["-v", "--verbose"], {
     help: "verbose output",
     action: "storeTrue",
   });
