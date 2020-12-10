@@ -290,7 +290,11 @@ const main = (function (args, helper) {
    */
   function isAudioFile(pth) {
     if (fs.lstatSync(pth).isDirectory()) return false;
-    if ([".MP3", ".M4A"].indexOf(path.extname(pth).toUpperCase()) != -1)
+    if (
+      [".MP3", ".M4A", ".M4B", ".OGG", ".WMA", ".FLAC"].indexOf(
+        path.extname(pth).toUpperCase()
+      ) != -1
+    )
       return true;
     return false;
   }
@@ -423,19 +427,6 @@ const main = (function (args, helper) {
     }
   }
   /**
-   * Traverses the source directory src according to options.
-   * @function groom
-   * @param  {String}  src Source directory.
-   * @param  {String}  dst Destination directory.
-   * @param  {Integer} cnt File count.
-   * @return {Array}   Array of {src, dst} pairs.
-   */
-  function groom(src, dst, cnt) {
-    const cntw = cnt.toString().length;
-
-    return walkFileTree(src, dst, [], [args.reverse ? cnt : 1], cntw);
-  }
-  /**
    * Creates album according to options.
    * @function buildAlbum
    * @return {Object} {count, [{src, dst}...]}.
@@ -465,7 +456,6 @@ const main = (function (args, helper) {
       }
     }
     const tot = helper.fileCount(args.src_dir, isAudioFile);
-    const belt = groom(args.src_dir, executiveDst, tot);
     if (!args.drop_dst && tot === 0) {
       fs.unlinkSync(executiveDst);
       console.log(
@@ -475,7 +465,16 @@ const main = (function (args, helper) {
       );
       process.exit();
     }
-    return { count: tot, belt: belt };
+    return {
+      count: tot,
+      belt: walkFileTree(
+        args.src_dir,
+        executiveDst,
+        [],
+        [args.reverse ? tot : 1],
+        tot.toString().length
+      ),
+    };
   }
   /**
    * Copies album
