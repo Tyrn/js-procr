@@ -85,7 +85,16 @@ describe("helper", function () {
 describe("helper", function () {
   describe(".makeInitials(name)", function () {
     it("reduces a string of names to initials", function () {
+      assert.equal(helper.makeInitials(""), "");
       assert.equal(helper.makeInitials(" "), "");
+      assert.equal(helper.makeInitials(".. , .. "), "");
+      assert.equal(helper.makeInitials(" ,, .,"), "");
+      assert.equal(helper.makeInitials(", a. g, "), "A.G.");
+      assert.equal(
+        helper.makeInitials("- , -I.V.-A,E.C.N-, ."),
+        "I.V-A.,E.C.N."
+      );
+      assert.equal(helper.makeInitials(""), "");
       assert.equal(
         helper.makeInitials("John ronald reuel Tolkien"),
         "J.R.R.T."
@@ -98,20 +107,30 @@ describe("helper", function () {
       );
       assert.equal(helper.makeInitials("Elisabeth Kubler-- - Ross"), "E.K-R.");
       assert.equal(helper.makeInitials('Arleigh "31-knot"Burke '), "A.B.");
-      assert.equal(helper.makeInitials(' William"Wild Bill" Donovan'), "W.D.");
       assert.equal(
         helper.makeInitials("Fitz-Simmons   Ashton-Burke Leigh"),
         "F-S.A-B.L."
       );
       assert.equal(
+        helper.makeInitials('Harry "Bing" Crosby, Kris "Tanto" Paronto'),
+        "H.C.,K.P."
+      );
+      assert.equal(
+        helper.makeInitials(
+          'William J. "Wild Bill" Donovan, Marta "Cinta Gonzalez'
+        ),
+        "W.J.D.,M.C.G."
+      );
+      assert.equal(helper.makeInitials("a.s , - . ,b.s."), "A.S.,B.S.");
+      assert.equal(
         helper.makeInitials("A. Strugatsky, B...Strugatsky. "),
         "A.S.,B.S."
       );
       assert.equal(
-        helper.makeInitials("Иржи Кропачек, Йозеф Новотный"),
+        helper.makeInitials("Иржи Кропачек,, Йозеф Новотный"),
         "И.К.,Й.Н."
       );
-      assert.equal(helper.makeInitials("österreich"), "Ö.");
+      assert.equal(helper.makeInitials("Österreich über alles"), "Ö.Ü.A.");
     });
   });
 });
