@@ -228,22 +228,27 @@ const helper = (exports.helper = (function () {
    * @param  {String} hyph  A hypen separating double names.
    * @return {String}       Properly formatted initials.
    */
-  function makeInitials(names, sep = ".", trail = ".", hyph = "-") {
-    const splitBySpace = (nm) => {
-      const reg = new RegExp(`[\\s${sep}]+`);
-      return nm
-        .split(reg)
-        .filter((x) => x)
-        .map((x) => x[0])
-        .join(sep)
-        .toUpperCase();
-    };
-    const splitByHyph = (nm) => {
-      const reg = new RegExp(`\\s*(?:${hyph}\\s*)+`);
-      return nm.split(reg).map(splitBySpace).join(hyph) + trail;
-    };
-    const sans_monikers = names.replace(/\"(?:\\.|[^\"\\])*\"/, " ");
-    return sans_monikers.split(",").map(splitByHyph).join(",");
+  function makeInitials(authors, sep = ".", trail = ".", hyph = "-") {
+    const rDot = new RegExp(`[\\s${sep}]+`);
+    const rHyph = new RegExp(`\\s*(?:${hyph}\\s*)+`);
+    return authors
+      .replace(/\"(?:\\.|[^\"\\])*\"/, " ")
+      .split(",")
+      .map(
+        (author) =>
+          author
+            .split(rHyph)
+            .map((barrel) =>
+              barrel
+                .split(rDot)
+                .filter((name) => name)
+                .map((name) => name[0])
+                .join(sep)
+                .toUpperCase()
+            )
+            .join(hyph) + trail
+      )
+      .join(",");
   }
   return {
     sansExt: sansExt,
