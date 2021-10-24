@@ -225,7 +225,7 @@ const helper = (exports.helper = (function () {
    * @param  {String} names Space Delimited sequence of names.
    * @param  {String} sep   A period separating the initials.
    * @param  {String} trail A period ending the initials.
-   * @param  {String} hyph  A hypen separating double names.
+   * @param  {String} hyph  A hyphen separating double-barrelled names.
    * @return {String}       Properly formatted initials.
    */
   function makeInitials(authors, sep = ".", trail = ".", hyph = "-") {
