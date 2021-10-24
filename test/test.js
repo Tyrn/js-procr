@@ -80,10 +80,12 @@ describe("helper", function () {
   });
 });
 
+// There are four delimiters: comma, hyphen, dot, and space. makeInitials()
+// syntax philosophy: if a delimiter is misplaced, it's ignored.
 describe("helper", function () {
   describe(".makeInitials(name)", function () {
     it("reduces a string of names to initials", function () {
-      assert.equal(helper.makeInitials(" "), ".");
+      assert.equal(helper.makeInitials(" "), "");
       assert.equal(
         helper.makeInitials("John ronald reuel Tolkien"),
         "J.R.R.T."

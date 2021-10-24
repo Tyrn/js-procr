@@ -234,10 +234,14 @@ const helper = (exports.helper = (function () {
     return authors
       .replace(/\"(?:\\.|[^\"\\])*\"/, " ")
       .split(",")
+      .filter((author) =>
+        author.replaceAll(sep, "").replaceAll(hyph, "").trim()
+      )
       .map(
         (author) =>
           author
-            .split(rHyph)
+            .split(hyph)
+            .filter((barrel) => barrel.replaceAll(sep, "").trim())
             .map((barrel) =>
               barrel
                 .split(rDot)
