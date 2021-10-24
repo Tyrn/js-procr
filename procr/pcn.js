@@ -222,11 +222,11 @@ const helper = (exports.helper = (function () {
   /**
    * Reduces a sequence of names to initials.
    * @function makeInitials
-   * @param  {String} names Space Delimited sequence of names.
-   * @param  {String} sep   A period separating the initials.
-   * @param  {String} trail A period ending the initials.
-   * @param  {String} hyph  A hyphen separating double-barrelled names.
-   * @return {String}       Properly formatted initials.
+   * @param  {String} authors A comma-delimited list of authors.
+   * @param  {String} sep     A period separating the initials.
+   * @param  {String} trail   A period ending the initials.
+   * @param  {String} hyph    A hyphen separating double-barrelled names.
+   * @return {String}         Properly formatted initials.
    */
   function makeInitials(authors, sep = ".", trail = ".", hyph = "-") {
     const rDot = new RegExp(`[\\s${sep}]+`);
