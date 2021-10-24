@@ -230,9 +230,9 @@ const helper = (exports.helper = (function () {
    */
   function makeInitials(authors, sep = ".", trail = ".", hyph = "-") {
     const rDot = new RegExp(`[\\s${sep}]+`);
-    const rHyph = new RegExp(`\\s*(?:${hyph}\\s*)+`);
     return authors
       .replace(/\"(?:\\.|[^\"\\])*\"/, " ")
+      .replaceAll('"', " ")
       .split(",")
       .filter((author) =>
         author.replaceAll(sep, "").replaceAll(hyph, "").trim()
